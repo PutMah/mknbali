@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citarasa Dewata</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #f8fafc; --bg-secondary: #ffffff; --bg-accent: #fffbeb;
+            --text-primary: #1e293b; --text-secondary: #475569; --text-accent: #b45309;
+            --border-color: #e2e8f0; --brand-primary: #f97316; --brand-secondary: #d97706;
+            --subtle-texture: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-48 50c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48-25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z" fill="%2394a3b8" fill-opacity="0.05" fill-rule="evenodd"/></svg>');
+        }
+        html.dark {
+            --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-accent: #334155;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-accent: #fb923c;
+            --border-color: #334155; --brand-primary: #fb923c; --brand-secondary: #f97316;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: var(--subtle-texture); z-index: -1; }
+        h1, h2, h3, .font-display { font-family: 'Playfair Display', serif; }
+        .page-enter { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #splash-screen { background: #fffbeb; }
+        #splash-screen .title-char { display: inline-block; opacity: 0; transform: translateY(20px); }
+        #splash-screen.fade-out { transition: opacity 0.8s ease-in-out; opacity: 0; pointer-events: none; }
+
+        .nav-active i, .nav-active span { color: var(--brand-primary); }
+        .tab-active { border-color: var(--brand-primary) !important; background-color: var(--bg-accent) !important; color: var(--text-accent) !important; }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .skeleton { background-color: var(--border-color); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .badge-unlocked { filter: grayscale(0); }
+        .badge-locked { filter: grayscale(1); opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div id="auth-container" class="fixed inset-0 z-50 hidden"></div>
+
+    <div id="main-app" class="max-w-md mx-auto bg-transparent min-h-screen opacity-0">
+        <header id="app-header" class="sticky top-0 z-30 p-4 flex items-center justify-between bg-transparent backdrop-blur-lg">
+            <div class="flex items-center">
+                <button id="back-button" class="hidden text-[var(--text-primary)] mr-4"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
+                <h1 id="app-title" class="text-2xl font-bold text-[var(--text-primary)]"></h1>
+            </div>
+            <button id="dark-mode-toggle" class="h-10 w-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)]"><i class="ph-bold ph-moon"></i></button>
+        </header>
+
+        <main id="page-content" class="p-4 pb-24"></main>
+
+        <footer class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[var(--bg-secondary)] border-t border-[var(--border-color)] shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-40">
+            <div class="flex justify-around">
+                <button id="nav-home" class="flex-1 flex flex-col items-center justify-center p-3 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)]"><i class="ph-bold ph-house text-2xl"></i><span class="text-xs font-medium">Beranda</span></button>
+                <button id="nav-challenge" class="flex-1 flex flex-col items-center justify-center p-3 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)]"><i class="ph-bold ph-trophy text-2xl"></i><span class="text-xs font-medium">Tantangan</span></button>
+                <button id="nav-profile" class="flex-1 flex flex-col items-center justify-center p-3 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)]"><i class="ph-bold ph-user text-2xl"></i><span class="text-xs font-medium">Profil</span></button>
+            </div>
+        </footer>
+    </div>
+    
+    <div id="modal-container" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm"></div>
+
+    <script>
+        // --- DATABASE ---
+        const dataMakanan = [
+            { id: 1, nama: "Nasi Campur Bali", kategori: "Nasi", deskripsiSingkat: "Nasi putih lengkap dengan berbagai lauk khas Bali.", deskripsi: "Nasi Campur Bali adalah hidangan nasi putih yang disajikan dengan beragam lauk pauk khas Bali. Ini adalah cerminan sejati dari kekayaan rasa pulau ini, sering kali mencakup ayam suwir, lawar, sate lilit, telur, sayuran urap, dan sambal matah yang pedas menyegarkan.", filosofi: "Nasi Campur melambangkan konsep 'Tri Hita Karana' atau harmoni, di mana berbagai elemen berbeda—rasa, tekstur, dan bahan—bersatu padu dalam satu piring untuk menciptakan keseimbangan yang sempurna.", galeri: ["nasi_campur_bali.jpg"], rekomendasi: [ { nama: "Warung Nasi Campur Kubu Sari", alamat: "Jl. Gajah Mada, Pemecutan Kaja, Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Nasi+Campur+Kubu+Sari+Denpasar" }, { nama: "Warung Makan Bu Rus", alamat: "Pusat Ubud, Ubud", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Makan+Bu+Rus+Ubud" }, { nama: "Warung Wardani", alamat: "Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Wardani+Denpasar" } ] },
+            { id: 2, nama: "Babi Guling", kategori: "Daging", deskripsiSingkat: "Pesta daging babi panggang dengan kulit super renyah.", deskripsi: "Hidangan ikonik Bali berupa babi utuh yang dipanggang dengan bumbu basa gede hingga kulitnya renyah sempurna. Disajikan dengan lawar, sate, dan kuah kaldu.", filosofi: "Melambangkan kemakmuran dan persembahan syukur, babi guling adalah sajian wajib dalam upacara adat besar di Bali, simbol kebersamaan dan perayaan.", galeri: ["babiguling.jpg"], rekomendasi: [ { nama: "Babi Guling Pak Malen", alamat: "Jl. Sunset Road No. 554, Seminyak, Kuta", gmaps: "https://goo.gl/maps/1TSXu5YZJMHQfUtH9" }, { nama: "Babi Guling Bu Oka", alamat: "Ubud", gmaps: "https://www.google.com/maps/search/?api=1&query=Babi+Guling+Ibu+Oka+Ubud" }, { nama: "Babi Guling Pak Putu", alamat: "Gianyar", gmaps: "https://www.google.com/maps/search/?api=1&query=Babi+Guling+Pak+Putu+Gianyar" } ] },
+            { id: 3, nama: "Tipat Blayag", kategori: "Salad", deskripsiSingkat: "Ketupat khas Bali disajikan dengan urap sayur dan kelapa.", deskripsi: "Tipat Blayag adalah hidangan ketupat khas dari daerah Buleleng, Bali, yang disajikan dengan bumbu kacang dan kelapa yang khas, sayuran urap, dan terkadang potongan ayam.", filosofi: "Hidangan ini mencerminkan kesederhanaan dan kekayaan alam Bali Utara. Tekstur lembut dari tipat dan bumbu yang gurih adalah perpaduan yang membumi.", galeri: ["tipat_blayag.jpg"], rekomendasi: [ { nama: "Tipat Blayag Raja", alamat: "Karangasem (Amlapura)", gmaps: "https://www.google.com/maps/search/?api=1&query=Tipat+Blayag+Raja+Karangasem" }, { nama: "Blayag Mek Sambru", alamat: "Singaraja (Buleleng)", gmaps: "https://www.google.com/maps/search/?api=1&query=Blayag+Mek+Sambru+Singaraja" }, { nama: "Tipat Blayag Sendang Restaurant", alamat: "Mayura Ubud Retreat, Ubud", gmaps: "https://www.google.com/maps/search/?api=1&query=Mayura+Ubud+Retreat" } ] },
+            { id: 4, nama: "Sate Lilit", kategori: "Sate", deskripsiSingkat: "Sate yang dililitkan ke batang serai, memakai daging ikan, ayam, atau babi.", deskripsi: "Berbeda dari sate biasa, Sate Lilit dibuat dari daging cincang yang kaya bumbu, lalu dililitkan pada batang serai atau bambu pipih. Aroma serai yang terbakar memberikan cita rasa yang unik.", filosofi: "Kata 'lilit' melambangkan persatuan dan gotong royong masyarakat Bali. Bentuknya yang menyatu adalah simbol kebersamaan yang erat.", galeri: ["sate_lilit.jpg"], rekomendasi: [ { nama: "Warung Ngurah Sate Lilit", alamat: "Seminyak/Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Ngurah+Sate+Lilit" }, { nama: "Warung Wardani (halal)", alamat: "Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Wardani+Denpasar" }, { nama: "Made’s Warung", alamat: "Seminyak", gmaps: "https://www.google.com/maps/search/?api=1&query=Made’s+Warung+Seminyak" } ] },
+            { id: 5, nama: "Ayam Betutu", kategori: "Ayam & Bebek", deskripsiSingkat: "Ayam utuh dibumbui rempah Bali, dimasak lama.", deskripsi: "Ayam atau bebek utuh yang diisi bumbu betutu, lalu dibungkus daun pisang dan dipanggang dalam sekam api selama berjam-jam. Hasilnya adalah daging yang sangat empuk dan kaya rasa.", filosofi: "Betutu adalah simbol kesabaran dan ketelitian. Proses memasaknya yang lama mengajarkan bahwa untuk mencapai hasil yang sempurna, dibutuhkan dedikasi dan waktu.", galeri: ["ayamnbetutu.jpg"], rekomendasi: [ { nama: "Ayam Betutu Khas Gilimanuk", alamat: "Jl. Tuban No.3, Kuta", gmaps: "https://www.google.com/maps/search/?api=1&query=Ayam+Betutu+Khas+Gilimanuk+Tuban" }, { nama: "Ayam Betutu Men Tempeh", alamat: "Gilimanuk", gmaps: "https://www.google.com/maps/search/?api=1&query=Ayam+Betutu+Men+Tempeh+Gilimanuk" }, { nama: "Warung Ayam Betutu Mek Nengah", alamat: "Ubud area", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Ayam+Betutu+Mek+Nengah+Ubud" } ] },
+            { id: 6, nama: "Lawar", kategori: "Daging", deskripsiSingkat: "Campuran kelapa parut, sayur, dan daging, kaya bumbu.", deskripsi: "Lawar adalah masakan berupa campuran sayur-sayuran, kelapa parut, dan daging cincang yang dibumbui secara merata. Ada varian lawar merah (dengan darah) dan lawar putih (tanpa darah).", filosofi: "Lawar adalah representasi keseimbangan (Rwa Bhineda) dalam hidup. Ia menyatukan unsur nabati (sayuran) dan hewani (daging) menjadi satu kesatuan yang harmonis.", galeri: ["lawar.jpg"], rekomendasi: [ { nama: "Lawar Kuwir Men Koko", alamat: "Jl. Raya Canggu, Berawa", gmaps: "https://www.google.com/maps/search/?api=1&query=Lawar+Kuwir+Men+Koko+Canggu" }, { nama: "Lawar Bali Kartika", alamat: "Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Lawar+Bali+Kartika+Denpasar" }, { nama: "Warung Lawar Kodi", alamat: "Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Lawar+Kodi+Denpasar" } ] },
+            { id: 7, nama: "Nasi Jinggo", kategori: "Nasi", deskripsiSingkat: "Nasi kecil bungkus daun pisang, cemilan malam praktis.", deskripsi: "Hidangan ini terdiri dari tipat (ketupat atau lontong) yang dicampur dengan sayuran rebus seperti kacang panjang, tauge, dan kangkung, lalu disiram dengan bumbu kacang yang gurih, manis, dan sedikit pedas. Rasanya mirip gado-gado, tetapi dengan cita rasa khas Bali yang lebih kuat, biasanya diberi tambahan jeruk limau dan taburan bawang goreng.", filosofi: "Simbol kesederhanaan dan kepraktisan, Nasi Jinggo awalnya dibuat untuk para pekerja malam yang membutuhkan makanan cepat, murah, dan mudah dibawa.", galeri: ["nasi_jinggo.jpg"], rekomendasi: [ { nama: "Nasi Jinggo Diponegoro", alamat: "Jl. Diponegoro No.99, Denpasar Barat", gmaps: "https://www.google.com/maps/search/?api=1&query=Nasi+Jinggo+Diponegoro" }, { nama: "Nasi Jinggo Om Gundul", alamat: "Denpasar area", gmaps: "https://www.google.com/maps/search/?api=1&query=Nasi+Jinggo+Om+Gundul+Denpasar" }, { nama: "Nasi Jinggo Thamrin", alamat: "Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Nasi+Jinggo+Thamrin+Denpasar" } ] },
+            { id: 8, nama: "Tipat Cantok", kategori: "Salad", deskripsiSingkat: "Hidangan tipat yang dicampur dengan sayuran rebus lalu disiram dengan bumbu kacang yang gurih.", deskripsi: "Sebuah hidangan unik yang menggabungkan segarnya irisan buah-buahan seperti mangga muda dan bengkuang dengan kuah pedas yang dibuat dari kaldu ikan pindang.", filosofi: "Tipat Cantok melambangkan kesederhanaan, kebersamaan, dan harmoni. Tipat mencerminkan ikatan dan persatuan, sementara cantok (mengulek) melambangkan penyatuan berbagai elemen menjadi satu keharmonisan rasa seperti nilai gotong royong dalam budaya Bali.", galeri: ["tipat_cantok.jpg"], rekomendasi: [ { nama: "Warung Lamis tipat cantok, tipat kare, rujak kuah pindang", alamat: "Gianyar", gmaps: "https://maps.app.goo.gl/MqEQyTqny9vywxap9" }, { nama: "Warung Tipat Cantok,rujak,bubur bumbu kuning", alamat: "Gianyar", gmaps: "https://maps.app.goo.gl/bQxGLwprNHtroWcH6" }, { nama: "Warung Tipat Cantok Singaraja", alamat: "Bali Singaraja", gmaps: "https://maps.app.goo.gl/8nTYrxk57qxTgrrj6" } ] },
+            { id: 9, nama: "Serombotan", kategori: "Salad", deskripsiSingkat: "Sayur rebus dicampur bumbu kelapa pedas khas Klungkung.", deskripsi: "Serombotan adalah hidangan sayuran khas Klungkung yang terdiri dari kangkung, bayam, dan tauge yang direbus, lalu dicampur dengan bumbu khas yang disebut 'kalas' (santan kental berbumbu) dan bumbu kacang.", filosofi: "Serombotan adalah cerminan rasa syukur atas hasil bumi. Setiap komponen sayuran memiliki maknanya sendiri, dan bersama-sama menciptakan hidangan yang sehat dan lezat.", galeri: ["serombotan.jpg"], rekomendasi: [ { nama: "Warung Mek Metar", alamat: "Jl. Untung Surapati, Semarapura Tengah, Klungkung", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Mek+Metar+Klungkung" }, { nama: "Warung Bu Geria", alamat: "Muliawan, Denpasar", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Serombotan+Bu+Geria+Denpasar" }, { nama: "Pasar Senggol Klungkung", gmaps: "https://www.google.com/maps/search/?api=1&query=Pasar+Senggol+Klungkung" } ] },
+            { id: 10, nama: "Tum Ayam", kategori: "Lauk", deskripsiSingkat: "Ayam cincang berbumbu dibungkus daun pisang lalu dikukus.", deskripsi: "Tum Ayam adalah lauk yang terbuat dari daging ayam cincang yang dicampur dengan bumbu basa gede dan santan, lalu dibungkus daun pisang berbentuk tum dan dikukus hingga matang.", filosofi: "Proses membungkus dengan daun pisang dan mengukus adalah teknik memasak kuno yang menjaga keaslian rasa dan nutrisi, sebuah kearifan lokal dalam mengolah makanan.", galeri: ["tum_ayam.jpg"], rekomendasi: [ { nama: "Ayam Betutu Men Tempeh (Lauk)", alamat: "Gilimanuk", gmaps: "https://www.google.com/maps/search/?api=1&query=Ayam+Betutu+Men+Tempeh+Gilimanuk" }, { nama: "Warung Mek Nengah (Lauk)", alamat: "Bali", gmaps: "https://www.google.com/maps/search/?api=1&query=Warung+Ayam+Betutu+Mek+Nengah" }, { nama: "Warung lokal tradisional", alamat: "Ubud atau Klungkung", gmaps: "#" } ] }
+        ];
+
+        const tantanganData = [
+            { id: 1, nama: "Penakluk Sate", deskripsi: "Cicipi Sate Lilit.", ikon: "ph-duotone ph-flame", targetKategori: "Sate", targetCount: 1 },
+            { id: 2, nama: "Ahli Salad Bali", deskripsi: "Coba 2 jenis hidangan salad/sayur.", ikon: "ph-duotone ph-leaf", targetKategori: "Salad", targetCount: 2 }
+        ];
+        const temaData = { orange: "#f97316", teal: "#14b8a6", pink: "#ec4899" };
+
+        // --- APP STATE & ELEMENTS ---
+        let state = { currentPage: 'home', user: null, favorites: [], darkMode: false, journal: {}, unlockedBadges: [], theme: 'orange', mapFilter: 'Semua' };
+        const elements = { 
+            html: document.documentElement, 
+            authContainer: document.getElementById('auth-container'), 
+            mainApp: document.getElementById('main-app'), 
+            pageContent: document.getElementById('page-content'), 
+            appTitle: document.getElementById('app-title'), 
+            backButton: document.getElementById('back-button'), 
+            darkModeToggle: document.getElementById('dark-mode-toggle'), 
+            modalContainer: document.getElementById('modal-container'), 
+            splashScreen: document.getElementById('splash-screen'),
+            nav: { home: document.getElementById('nav-home'), challenge: document.getElementById('nav-challenge'), profile: document.getElementById('nav-profile') } 
+        };
+        
+        // --- FORWARD DECLARATIONS ---
+        let initializeApp;
+        let runSplashScreen;
+
+        // --- LOCAL STORAGE & STATE MANAGEMENT ---
+        const saveState = () => localStorage.setItem('citarasaDewataStateV8', JSON.stringify(state));
+        const loadState = () => {
+            const savedState = JSON.parse(localStorage.getItem('citarasaDewataStateV8'));
+            if (savedState) state = { ...state, ...savedState };
+            const users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+            return users;
+        };
+
+        // --- AUTHENTICATION ---
+        const handleLogin = (email, password) => {
+            const users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+            const foundUser = users.find(u => u.email === email && u.password === password);
+            if (foundUser) {
+                state.user = { name: foundUser.name, email: foundUser.email, password: foundUser.password, twoFactor: foundUser.twoFactor || false, profilePic: foundUser.profilePic || '' }; // Ensure profilePic and twoFactor are loaded
+                saveState();
+                initializeApp(false);
+            } else {
+                alert("Email atau password salah!");
+            }
+        };
+        
+        const handleRegister = (name, email, password) => {
+            let users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+            const userExists = users.some(u => u.email === email);
+            if (userExists) {
+                alert("Email sudah terdaftar!");
+                return;
+            }
+            users.push({ name, email, password, twoFactor: false, profilePic: '' });
+            localStorage.setItem('citarasaUsers', JSON.stringify(users));
+            handleLogin(email, password);
+        };
+
+        const handleLogout = () => {
+            state.user = null;
+            state.favorites = [];
+            state.journal = {};
+            state.unlockedBadges = [];
+            saveState();
+            initializeApp(false);
+        };
+
+        // --- CORE FUNCTIONS ---
+        const navigateTo = (page) => { state.currentPage = page; renderApp(); };
+        const toggleFavorite = (id) => { const index = state.favorites.indexOf(id); if (index > -1) state.favorites.splice(index, 1); else state.favorites.push(id); saveState(); renderApp(); };
+        const toggleDarkMode = () => { state.darkMode = !state.darkMode; elements.html.classList.toggle('dark'); elements.darkModeToggle.innerHTML = state.darkMode ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>'; saveState(); };
+        const toggleJournal = (id) => { state.journal[id] = !state.journal[id]; checkChallenges(); saveState(); renderApp(); };
+        const checkChallenges = () => {
+            tantanganData.forEach(t => {
+                const triedInCategory = Object.keys(state.journal).filter(jid => state.journal[jid] && dataMakanan.find(m => m.id == jid)?.kategori === t.targetKategori).length;
+                if (triedInCategory >= t.targetCount && !state.unlockedBadges.includes(t.id)) {
+                    state.unlockedBadges.push(t.id);
+                    showModal(`<div class="bg-[var(--bg-secondary)] text-center w-11/12 p-6 rounded-2xl shadow-xl page-enter"><i class="${t.ikon} text-6xl text-yellow-400"></i><h2 class="text-2xl font-bold font-display mt-2">Lencana Terbuka!</h2><p>"${t.nama}"</p><button onclick="hideModal()" class="mt-4 w-full bg-[var(--brand-primary)] text-white font-bold py-2 rounded-lg">Luar Biasa!</button></div>`);
+                }
+            });
+        };
+        const applyTheme = (theme) => { state.theme = theme; if(temaData[theme]) { document.documentElement.style.setProperty('--brand-primary', temaData[theme]); } saveState(); };
+        const showModal = (content) => { elements.modalContainer.innerHTML = content; elements.modalContainer.classList.remove('hidden'); elements.modalContainer.classList.add('flex'); };
+        const hideModal = () => { elements.modalContainer.classList.add('hidden'); elements.modalContainer.classList.remove('flex'); };
+
+        // --- PAGE RENDERING LOGIC ---
+        const renderApp = () => {
+            window.scrollTo(0, 0);
+            elements.backButton.classList.add('hidden');
+            Object.values(elements.nav).forEach(btn => btn.classList.remove('nav-active'));
+            const [page, param] = state.currentPage.split(':');
+            elements.pageContent.innerHTML = '<div class="page-enter space-y-4">' + Array(5).fill('<div class="h-24 w-full rounded-xl skeleton"></div>').join('') + '</div>';
+            
+            setTimeout(() => {
+                switch (page) {
+                    case 'home': elements.appTitle.textContent = `Halo, ${state.user.name}!`; elements.nav.home.classList.add('nav-active'); renderHomePage(); break;
+                    case 'challenge': elements.appTitle.textContent = 'Tantangan'; elements.nav.challenge.classList.add('nav-active'); renderChallengePage(); break;
+                    case 'profile': elements.appTitle.textContent = 'Profil Saya'; elements.nav.profile.classList.add('nav-active'); renderProfilePage(); break;
+                    case 'detail':
+                        const makanan = dataMakanan.find(m => m.id === parseInt(param));
+                        if (makanan) {
+                            elements.appTitle.textContent = makanan.nama;
+                            elements.backButton.classList.remove('hidden');
+                            renderDetailPage(parseInt(param));
+                        } else {
+                            navigateTo('home');
+                        }
+                        break;
+                    case 'resetPassword':
+                        renderResetPasswordPage();
+                        break;
+                    default:
+                        navigateTo('home');
+                }
+            }, 300);
+        };
+
+        // --- RENDERERS ---
+        const renderAuthPage = (mode = 'login') => {
+            elements.authContainer.classList.remove('hidden');
+            elements.mainApp.classList.add('opacity-0');
+            const isLogin = mode === 'login';
+            elements.authContainer.innerHTML = `
+                <div class="w-full h-full flex flex-col justify-center items-center bg-cover bg-center p-4" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1582550965154-780c24684936?q=80&w=1935&auto=format&fit=crop');">
+                    <div class="w-full max-w-sm text-center text-white page-enter">
+                        <i class="ph-duotone ph-bowl-food text-6xl"></i>
+                        <h1 class="text-5xl font-bold font-display mt-2">${isLogin ? 'Selamat Datang' : 'Buat Akun'}</h1>
+                        <p class="mt-2 mb-8">${isLogin ? 'Masuk untuk melanjutkan petualanganmu.' : 'Daftar untuk memulai petualanganmu.'}</p>
+                        <form id="auth-form" class="space-y-4">
+                            ${!isLogin ? '<input type="text" id="username" placeholder="Nama Pengguna" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>' : ''}
+                            <input type="email" id="email" placeholder="Email" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+                            <input type="password" id="password" placeholder="Password" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+                            <button type="submit" class="w-full py-3 bg-orange-500 rounded-lg font-bold hover:bg-orange-600 transition-colors">${isLogin ? 'Masuk' : 'Daftar'}</button>
+                        </form>
+                        <p class="mt-6">
+                            ${isLogin ? 'Belum punya akun?' : 'Sudah punya akun?'}
+                            <button id="switch-auth" class="font-bold underline">${isLogin ? 'Daftar di sini' : 'Masuk di sini'}</button>
+                            ${isLogin ? '<br><button id="forgot-password-link" class="font-bold underline mt-2">Lupa Password?</button>' : ''}
+                        </p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('switch-auth').addEventListener('click', () => renderAuthPage(isLogin ? 'register' : 'login'));
+            if (isLogin) {
+                document.getElementById('forgot-password-link').addEventListener('click', () => renderResetPasswordPage());
+            }
+            document.getElementById('auth-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                if (isLogin) {
+                    handleLogin(email, password);
+                } else {
+                    const name = document.getElementById('username').value;
+                    if (name && email && password) {
+                        handleRegister(name, email, password);
+                    }
+                }
+            });
+        };
+
+        const renderResetPasswordPage = () => {
+            elements.authContainer.classList.remove('hidden');
+            elements.mainApp.classList.add('opacity-0');
+            elements.authContainer.innerHTML = `
+                <div class="w-full h-full flex flex-col justify-center items-center bg-cover bg-center p-4" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1582550965154-780c24684936?q=80&w=1935&auto=format&fit=crop');">
+                    <div class="w-full max-w-sm text-center text-white page-enter">
+                        <i class="ph-duotone ph-lock-key text-6xl"></i>
+                        <h1 class="text-5xl font-bold font-display mt-2">Atur Ulang Password</h1>
+                        <p class="mt-2 mb-8">Masukkan email dan password baru Anda.</p>
+                        <form id="reset-password-form" class="space-y-4">
+                            <input type="email" id="reset-email" placeholder="Email" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+                            <input type="password" id="new-reset-password" placeholder="Password Baru" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+                            <input type="password" id="confirm-new-reset-password" placeholder="Konfirmasi Password Baru" class="w-full px-4 py-3 bg-white/20 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+                            <button type="submit" class="w-full py-3 bg-orange-500 rounded-lg font-bold hover:bg-orange-600 transition-colors">Atur Ulang Password</button>
+                        </form>
+                        <p class="mt-6">
+                            <button id="back-to-login" class="font-bold underline">Kembali ke Login</button>
+                        </p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('back-to-login').addEventListener('click', () => renderAuthPage('login'));
+            document.getElementById('reset-password-form').addEventListener('submit', handleResetPassword);
+        };
+
+        const handleResetPassword = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            const newPassword = document.getElementById('new-reset-password').value;
+            const confirmNewPassword = document.getElementById('confirm-new-reset-password').value;
+
+            if (newPassword !== confirmNewPassword) {
+                alert("Password baru dan konfirmasi tidak cocok!");
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+            const userIndex = users.findIndex(u => u.email === email);
+
+            if (userIndex > -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('citarasaUsers', JSON.stringify(users));
+                alert("Password berhasil diatur ulang! Silakan login dengan password baru Anda.");
+                renderAuthPage('login');
+            } else {
+                alert("Email tidak ditemukan. Pastikan email yang Anda masukkan benar.");
+            }
+        };
+
+        const renderFoodCard = (m) => {
+            return `
+                <div class="food-card w-full snap-start" data-id="${m.id}">
+                    <div class="relative group cursor-pointer">
+                        <img src="${m.galeri[0]}" class="w-full h-80 object-cover rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Gambar+Tidak+Tersedia';">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-2xl"></div>
+                        <div class="absolute bottom-0 left-0 p-5 w-full">
+                            <h3 class="text-2xl text-white font-bold font-display">${m.nama}</h3>
+                            <p class="text-amber-300 text-sm font-semibold">${m.kategori}</p>
+                            <p class="text-white/90 text-sm mt-2 truncate">${m.deskripsiSingkat}</p>
+                        </div>
+                    </div>
+                </div>`;
+        };
+        
+        const renderHomePage = () => {
+            elements.pageContent.innerHTML = `
+                <div class="page-enter space-y-8">
+                    <input type="text" id="search-input" placeholder="Cari makanan..." class="w-full px-4 py-3 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
+                    <div id="food-list-container">
+                        ${dataMakanan.map(m => renderFoodCard(m)).join('')}
+                    </div>
+                </div>`;
+            
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('keyup', () => {
+                const query = searchInput.value.toLowerCase();
+                filterFoodItems(query);
+            });
+
+            addCardEventListeners();
+        };
+
+        const filterFoodItems = (query) => {
+            const filteredMakanan = dataMakanan.filter(m => 
+                m.nama.toLowerCase().includes(query) || 
+                m.kategori.toLowerCase().includes(query) ||
+                m.deskripsiSingkat.toLowerCase().includes(query)
+            );
+            const foodListContainer = document.getElementById('food-list-container');
+            foodListContainer.innerHTML = filteredMakanan.map(m => renderFoodCard(m)).join('');
+            addCardEventListeners();
+        };
+
+        const addCardEventListeners = () => {
+            document.querySelectorAll('.food-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    navigateTo(`detail:${card.dataset.id}`);
+                });
+            });
+        };
+
+        const renderDetailPage = (id) => {
+            const makanan = dataMakanan.find(m => m.id === id);
+            if (!makanan) { navigateTo('home'); return; }
+
+            elements.pageContent.innerHTML = `
+                <div class="page-enter">
+                    <div class="relative h-80 w-full rounded-2xl shadow-xl mb-4 overflow-hidden">
+                        <img src="${makanan.galeri[0]}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-3xl font-bold font-display">${makanan.nama}</h2>
+                        <div class="flex gap-2">
+                            <button data-id="${id}" class="favorite-btn-detail h-12 w-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center shadow-md">
+                                <i class="ph-fill ph-heart text-2xl ${state.favorites.includes(id) ? 'text-red-500' : 'text-[var(--text-secondary)]'}"></i>
+                            </button>
+                            <button data-id="${id}" class="share-btn-detail h-12 w-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center shadow-md">
+                                <i class="ph-bold ph-share-network text-2xl text-[var(--text-secondary)]"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                            <h3 class="font-display text-xl text-[var(--text-accent)] font-bold">Deskripsi</h3>
+                            <p class="text-[var(--text-secondary)] leading-relaxed pt-2">${makanan.deskripsi}</p>
+                        </div>
+                        <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                            <h3 class="font-display text-xl text-[var(--text-accent)] font-bold">Filosofi</h3>
+                            <p class="text-[var(--text-secondary)] leading-relaxed pt-2">${makanan.filosofi}</p>
+                        </div>
+                        <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                            <h3 class="font-display text-xl text-[var(--text-accent)] font-bold">Rekomendasi Tempat</h3>
+                            <div class="space-y-3 pt-2">
+                                ${makanan.rekomendasi.map(r => `
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-semibold">${r.nama}</p>
+                                            <p class="text-sm text-[var(--text-secondary)]">${r.alamat}</p>
+                                        </div>
+                                        <a href="${r.gmaps}" target="_blank" class="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-[var(--bg-accent)] text-[var(--text-accent)]">
+                                            <i class="ph-bold ph-map-pin"></i>
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                            <h3 class="font-display text-xl text-[var(--text-accent)] font-bold mb-3">Tandai Petualanganmu</h3>
+                            <button data-id="${id}" class="journal-btn w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${state.journal[id] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}">
+                                <i class="ph-bold ph-check-circle text-2xl"></i>
+                                <span>${state.journal[id] ? 'Sudah Dicoba!' : 'Tandai Sudah Coba'}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            document.querySelector('.journal-btn').addEventListener('click', () => toggleJournal(id));
+            document.querySelector('.favorite-btn-detail').addEventListener('click', () => toggleFavorite(id));
+            document.querySelector('.share-btn-detail').addEventListener('click', () => shareFoodDetail(id));
+        };
+
+        const shareFoodDetail = async (foodId) => {
+            const foodItem = dataMakanan.find(m => m.id === foodId);
+            if (!foodItem) return;
+
+            // Using a placeholder domain as the actual domain is not known from the HTML file.
+            // In a real application, you would use window.location.origin or your actual app URL.
+            const shareUrl = `https://citarasadewata.app/detail?id=${foodId}`; 
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Citarasa Dewata: ${foodItem.nama}`,
+                        text: `Cek makanan khas Bali ini: ${foodItem.nama} - ${foodItem.deskripsiSingkat}`,
+                        url: shareUrl,
+                    });
+                    console.log('Content shared successfully');
+                } catch (error) {
+                    console.error('Error sharing:', error);
+                }
+            } else {
+                // Fallback for browsers that do not support Web Share API
+                alert(`Anda bisa membagikan link ini: ${shareUrl}`);
+                // Optionally, copy to clipboard:
+                // navigator.clipboard.writeText(shareUrl).then(() => {
+                //     alert('Link telah disalin ke clipboard!');
+                // }).catch(err => {
+                //     console.error('Could not copy text: ', err);
+                // });
+            }
+        };
+
+        const renderChallengePage = () => {
+             elements.pageContent.innerHTML = `
+                <div class="page-enter space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Tantangan Kuliner</h3>
+                        <div class="space-y-4">
+                        ${tantanganData.map(t => {
+                            const triedInCategory = Object.keys(state.journal).filter(jid => state.journal[jid] && dataMakanan.find(m => m.id == jid)?.kategori === t.targetKategori).length;
+                            const progress = Math.min((triedInCategory / t.targetCount) * 100, 100);
+                            return `
+                                <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                                    <div class="flex items-center gap-4">
+                                        <i class="${t.ikon} text-4xl ${state.unlockedBadges.includes(t.id) ? 'text-yellow-400' : 'text-[var(--text-accent)]'}"></i>
+                                        <div>
+                                            <h4 class="font-bold">${t.nama}</h4>
+                                            <p class="text-sm text-[var(--text-secondary)]">${t.deskripsi}</p>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-[var(--border-color)] rounded-full h-2.5 mt-3">
+                                        <div class="bg-[var(--brand-primary)] h-2.5 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                                    </div>
+                                    <p class="text-xs text-right mt-1 text-[var(--text-secondary)]">${triedInCategory}/${t.targetCount}</p>
+                                </div>
+                            `;
+                        }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+const renderProfilePage = () => {
+    // Tentukan sumber gambar profil
+    const profilePicSrc = state.user.profilePic || 'https://via.placeholder.com/150/f97316/ffffff?text=U'; // Placeholder default
+
+    elements.pageContent.innerHTML = `
+        <div class="page-enter space-y-6">
+            <div class="text-center">
+                <div class="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-[var(--brand-primary)] shadow-md mb-4">
+                    <img id="profile-pic-display" src="${profilePicSrc}" alt="Foto Profil" class="w-full h-full object-cover">
+                    <label for="profile-pic-upload" class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xl cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-300">
+                        <i class="ph-bold ph-camera"></i>
+                    </label>
+                    <input type="file" id="profile-pic-upload" accept="image/*" class="hidden">
+                </div>
+                <h2 class="text-2xl font-bold mt-2">${state.user.name}</h2>
+                <p class="text-[var(--text-secondary)]">${state.user.email}</p>
+            </div>
+            <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                <h3 class="text-xl font-bold mb-3">Statistik Saya</h3>
+                <div class="flex justify-around text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-[var(--brand-primary)]">${Object.keys(state.journal).filter(k => state.journal[k]).length}</p>
+                        <p class="text-sm text-[var(--text-secondary)]">Telah Dicoba</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-[var(--brand-primary)]">${state.favorites.length}</p>
+                        <p class="text-sm text-[var(--text-secondary)]">Favorit</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-[var(--brand-primary)]">${state.unlockedBadges.length}</p>
+                        <p class="text-sm text-[var(--text-secondary)]">Lencana</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[var(--bg-secondary)] p-4 rounded-xl shadow-sm">
+                <h3 class="text-xl font-bold mb-3">Keamanan Akun</h3>
+                <p class="text-[var(--text-secondary)]">Atur ulang password dan aktifkan verifikasi dua langkah.</p>
+                <form id="change-password-form" class="space-y-3">
+                    <input type="password" id="current-password" placeholder="Password saat ini" required class="w-full px-4 py-2 border rounded-lg">
+                    <input type="password" id="new-password" placeholder="Password baru" required class="w-full px-4 py-2 border rounded-lg">
+                    <input type="password" id="confirm-password" placeholder="Konfirmasi password baru" required class="w-full px-4 py-2 border rounded-lg">
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold">Simpan Password</button>
+                </form>
+                <label class="flex items-center space-x-3 mt-4">
+                    <input type="checkbox" id="two-factor-toggle" class="form-checkbox h-5 w-5 text-blue-600">
+                    <span>Aktifkan verifikasi dua langkah melalui email</span>
+                </label>
+            </div>
+
+            <div>
+                <button id="logout-btn" class="w-full py-3 bg-red-500 text-white rounded-lg font-bold">Keluar</button>
+            </div>
+        </div>
+    `;
+
+    // Initialize two-factor toggle state
+    document.getElementById("two-factor-toggle").checked = state.user.twoFactor;
+
+    // Event listener untuk form ganti password
+    document.getElementById("change-password-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const currentPass = document.getElementById("current-password").value;
+        const newPass = document.getElementById("new-password").value;
+        const confirmPass = document.getElementById("confirm-password").value;
+
+        if (newPass !== confirmPass) {
+            alert("Password baru dan konfirmasi tidak cocok.");
+            return;
+        }
+
+        if (currentPass !== state.user.password) {
+            alert("Password saat ini salah.");
+            return;
+        }
+
+        state.user.password = newPass;
+        let users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+        const userIdx = users.findIndex(u => u.email === state.user.email);
+        if (userIdx > -1) {
+            users[userIdx].password = newPass;
+            localStorage.setItem('citarasaUsers', JSON.stringify(users));
+        }
+
+        saveState();
+        alert("Password berhasil diperbarui.");
+        renderProfilePage();
+    });
+
+    // Event listener untuk verifikasi dua langkah
+    document.getElementById("two-factor-toggle").addEventListener("change", (e) => {
+        state.user.twoFactor = e.target.checked;
+        let users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+        const userIdx = users.findIndex(u => u.email === state.user.email);
+        if (userIdx > -1) {
+            users[userIdx].twoFactor = e.target.checked;
+            localStorage.setItem('citarasaUsers', JSON.stringify(users));
+        }
+        saveState();
+    });
+
+    // Event listener untuk upload gambar profil
+    document.getElementById('profile-pic-upload').addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageDataUrl = e.target.result;
+                state.user.profilePic = imageDataUrl;
+
+                let users = JSON.parse(localStorage.getItem('citarasaUsers')) || [];
+                const currentUserIndex = users.findIndex(u => u.email === state.user.email);
+                if (currentUserIndex > -1) {
+                    users[currentUserIndex].profilePic = imageDataUrl;
+                    localStorage.setItem('citarasaUsers', JSON.stringify(users));
+                }
+
+                saveState();
+                document.getElementById('profile-pic-display').src = imageDataUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', handleLogout);
+};
+
+        // --- INITIALIZATION ---
+        initializeApp = (withSplash = true) => {
+            loadState();
+            if (!state.user) {
+                renderAuthPage();
+                return;
+            }
+
+            elements.authContainer.classList.add('hidden');
+            elements.mainApp.classList.remove('opacity-0');
+
+            Object.values(elements.nav).forEach(btn => btn.addEventListener('click', () => navigateTo(btn.id.split('-')[1])));
+            elements.backButton.addEventListener('click', () => navigateTo('home'));
+            elements.darkModeToggle.addEventListener('click', toggleDarkMode);
+            
+            if (withSplash) {
+                elements.mainApp.style.opacity = '0';
+                runSplashScreen(renderApp);
+            } else {
+                elements.mainApp.style.opacity = '1';
+                renderApp();
+            }
+        };
+        
+        runSplashScreen = (onCompleteCallback) => {
+            const tl = gsap.timeline({onComplete: () => {
+                if(elements.splashScreen) elements.splashScreen.style.display = 'none';
+                gsap.to(elements.mainApp, { opacity: 1, duration: 0.5 });
+                if (onCompleteCallback) onCompleteCallback();
+            }});
+
+            const title = "Citarasa Dewata";
+            const titleContainer = document.getElementById('splash-title');
+            if (!titleContainer) return; 
+            titleContainer.innerHTML = ''; 
+            
+            title.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.className = 'title-char';
+                if (char === ' ') span.style.width = '1rem';
+                titleContainer.appendChild(span);
+            });
+
+            tl.to("#splash-icon", { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" })
+              .to(".title-char", { opacity: 1, y: 0, duration: 0.8, stagger: 0.05, ease: "power3.out" }, "-=0.5")
+              .to("#splash-tagline", { opacity: 1, duration: 0.8, ease: "power2.inOut" }, "-=0.5")
+              .to("#splash-screen", { opacity: 0, duration: 1, delay: 0.5 });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp(true); 
+        });
+    </script>
+</body>
+</html>
